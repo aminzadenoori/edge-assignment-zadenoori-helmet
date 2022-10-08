@@ -1,0 +1,48 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-ubuntu:focal-run
+
+LABEL maintainer="Amin Zadenoori <Amin.zadenoori@gmail.com>"
+LABEL version="1.0"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV UDEV=1
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src"
+
+
+
+RUN apt update && apt-get install -y 
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get update && apt-get install libjpeg-dev zlib1g-dev ffmpeg libsm6 libxext6 python3-pip python3-dev -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y build-essential cmake pkg-config
+RUN apt-get update && \
+	apt-get install -yq \
+	python3-opencv
+
+#RUN pip3 install poetry
+#RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+
+
+
+WORKDIR /usr/src/
+
+#COPY poetry.lock ./poetry.lock
+#COPY pyproject.toml ./poetry.toml
+#RUN wget https://raw.githubusercontent.com/cvjena/darknet/master/cfg/yolo.cfg
+COPY requirements.txt ./requirements.txt
+#RUN apt-get install -y cmake
+#Run apt update && apt install libgl1-mesa-glx
+#RUN pip3 install --upgrade setuptools pip
+#RUN pip3 install opencv-python
+RUN pip3 install --upgrade pip setuptools wheel
+
+RUN pip3 install -r requirements.txt
+
+#RUN pip3 install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp38-cp38-linux_aarch64.whl
+RUN pip3 install --no-cache-dir tflite_runtime==2.5.0 
+
+COPY ./app ./app
+COPY app/config app/config
+
+COPY start.sh .
+RUN chmod +x start.sh
+CMD ./start.sh

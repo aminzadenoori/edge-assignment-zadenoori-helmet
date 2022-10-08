@@ -1,0 +1,1 @@
+modprobe bcm2835_v4l2 && python3 -u app/main.py
